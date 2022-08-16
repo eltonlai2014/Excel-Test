@@ -229,10 +229,10 @@ worksheet2.addImage(imageId, { tl: { col: 10, row: 10 }, ext: { width: 140, heig
 
 
 // 繪製圖檔並產生png buffer
-const fs = require('fs')
-const { createCanvas, loadImage } = require('canvas')
-const width = 1200;
-const height = 600;
+const fs = require('fs');
+const { createCanvas, loadImage } = require('canvas');
+const width = 1200;;
+const height = 600;;
 const canvas = createCanvas(width, height);
 const context = canvas.getContext('2d');
 
@@ -240,11 +240,13 @@ context.fillStyle = '#fff';
 context.fillRect(0, 0, width, height);
 
 const text = 'Hello, World!';
+context.font = 'bold 70pt Menlo';
 context.textBaseline = 'top';
 context.fillStyle = '#3574d4';
 const textWidth = context.measureText(text).width;
 context.fillRect(600 - textWidth / 2 - 10, 170 - 5, textWidth + 20, 120);
 context.fillStyle = '#fff';
+context.textAlign = 'center';
 context.fillText(text, 600, 170);
 
 const buffer = canvas.toBuffer('image/png');
@@ -255,7 +257,7 @@ const imageId2 = workbook.addImage({
   extension: 'png',
 });
 
-worksheet2.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: 140, height: 90 } });
+worksheet2.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: width, height: height } });
 
 // 產生Excel檔案
 workbook.xlsx.writeFile("Debtors.xlsx");
