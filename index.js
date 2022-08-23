@@ -341,7 +341,7 @@ const imageId2 = workbook.addImage({
   extension: 'png',
 });
 
-worksheet2.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: 400, height: 300 } });
+worksheet.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: 400, height: 300 } });
 
 // 產生Excel檔案
 workbook.xlsx.writeFile("Debtors.xlsx");

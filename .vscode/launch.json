@@ -21,6 +21,15 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}\\image.js"
-    }    
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "axis",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\axis.js"
+    }            
   ]
 }
