@@ -1,3 +1,44 @@
+const fs = require('fs');
+const path = require('path');
+const _ = require('lodash');
+
+if (!fs.existsSync('logs')) {
+  fs.mkdirSync('logs');
+}
+const log4js = require('log4js');
+const logger = log4js.getLogger('index');
+
+logFilename = 'logs/log';
+log4js.addLayout('json', function(config) {
+  return function(logEvent) {
+      logEvent.caller = logEvent.fileName + ':' + logEvent.lineNumber;
+      return JSON.stringify(logEvent) + config.separator;
+  };
+});
+
+log4js.configure({
+  appenders: {
+      out: {
+          type: 'console',
+      },
+      task: {
+          type: 'dateFile',
+          // layout: { type: 'json', separator: ',' },
+          filename: logFilename,
+          alwaysIncludePattern: true,
+          numBackups: 15,
+      },
+  },
+  categories: {
+      default: {
+          appenders: ['out', 'task'],
+          level: 'INFO',
+          enableCallStack: true,
+      },
+  },
+});
+
+
 const data = [
   {
     firstName: "John",
@@ -229,27 +270,70 @@ worksheet2.addImage(imageId, { tl: { col: 10, row: 10 }, ext: { width: 140, heig
 
 
 // 繪製圖檔並產生png buffer
-const fs = require('fs');
-const { createCanvas, loadImage } = require('canvas');
-const width = 1200;;
-const height = 600;;
-const canvas = createCanvas(width, height);
-const context = canvas.getContext('2d');
 
-context.fillStyle = '#fff';
-context.fillRect(0, 0, width, height);
 
-const text = 'Hello, World!';
-context.font = 'bold 70pt Menlo';
-context.textBaseline = 'top';
-context.fillStyle = '#3574d4';
-const textWidth = context.measureText(text).width;
-context.fillRect(600 - textWidth / 2 - 10, 170 - 5, textWidth + 20, 120);
-context.fillStyle = '#fff';
-context.textAlign = 'center';
-context.fillText(text, 600, 170);
+// 讀取預設權限檔案
+let chartData = null;
+// read dataFile
+const dataFile = path.join('chart_data.json').normalize();
+const hasFile = fs.existsSync(dataFile);
+logger.info('load functionFile', hasFile, dataFile);
+if (hasFile) {
+  try {
+    const file = fs.readFileSync(dataFile, 'utf8');
+    chartData = JSON.parse(file);
+  } catch (err) {
+    logger.error(err);
+  }
+}
+logger.info('chartData', chartData);
 
-const buffer = canvas.toBuffer('image/png');
+let xMap = {};
+let deviceMap = {};
+for(let i=0; i<chartData.length; i++) {
+  // site內 type 次數加總
+  let aKey = chartData[i].site_id;
+  let aTypeKey = chartData[i].type ;
+  if(!xMap[aKey]){
+    xMap[aKey] = {};
+  }
+  if(!xMap[aKey][aTypeKey]){
+    xMap[aKey][aTypeKey] = {};
+    xMap[aKey][aTypeKey].count = chartData[i].eventcount;
+    xMap[aKey][aTypeKey].detail = [];
+  }
+  else{
+    xMap[aKey][aTypeKey].count += chartData[i].eventcount ; 
+  }
+  xMap[aKey][aTypeKey].detail.push(chartData[i]); 
+
+  // site內 device->type 分組
+  let aDeviceKey = chartData[i].device_id ;
+  if(!deviceMap[aDeviceKey]){
+    deviceMap[aDeviceKey] = {};
+    deviceMap.site_id = chartData[i].site_id;
+  }
+  if(!deviceMap[aDeviceKey][aTypeKey]){
+    deviceMap[aDeviceKey][aTypeKey] = {};
+    deviceMap[aDeviceKey][aTypeKey].count = chartData[i].eventcount;
+    deviceMap[aDeviceKey][aTypeKey].detail = [];
+  }
+  else{
+    deviceMap[aDeviceKey][aTypeKey].count += chartData[i].eventcount ; 
+  }
+  deviceMap[aDeviceKey][aTypeKey].detail.push(chartData[i]);   
+}
+
+logger.info('xMap', xMap);
+logger.info('deviceMap', deviceMap);
+
+// 繪圖
+const RectChect = require('./chart/RectChart');
+const aRectChart = new RectChect(400, 300);
+let xxx = aRectChart.getChartInfo();
+aRectChart.setChartData(xMap);
+aRectChart.paint();
+const buffer = aRectChart.getCanvasBuffer();
 
 // 加入excel workbook
 const imageId2 = workbook.addImage({
@@ -257,29 +341,9 @@ const imageId2 = workbook.addImage({
   extension: 'png',
 });
 
-worksheet2.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: width, height: height } });
+worksheet2.addImage(imageId2, { tl: { col: 16, row: 10 }, ext: { width: 400, height: 300 } });
 
 // 產生Excel檔案
 workbook.xlsx.writeFile("Debtors.xlsx");
 
 console.log("ok");
-
-
-// // 通过文件名将图像添加到工作簿
-// const imageId1 = workbook.addImage({
-//   filename: 'path/to/image.jpg',
-//   extension: 'jpeg',
-// });
-
-// // 通过 buffer 将图像添加到工作簿
-// const imageId2 = workbook.addImage({
-//   buffer: fs.readFileSync('path/to.image.png'),
-//   extension: 'png',
-// });
-
-// // 通过 base64  将图像添加到工作簿
-// const myBase64Image = "data:image/png;base64,iVBORw0KG...";
-// const imageId2 = workbook.addImage({
-//   base64: myBase64Image,
-//   extension: 'png',
-// });
