@@ -268,16 +268,12 @@ const imageId = workbook.addImage({
 });
 worksheet2.addImage(imageId, { tl: { col: 10, row: 10 }, ext: { width: 140, height: 90 } });
 
-
-// 繪製圖檔並產生png buffer
-
-
 // 讀取預設權限檔案
 let chartData = null;
 // read dataFile
 const dataFile = path.join('chart_data.json').normalize();
 const hasFile = fs.existsSync(dataFile);
-logger.info('load functionFile', hasFile, dataFile);
+logger.info('load dataFile', hasFile, dataFile);
 if (hasFile) {
     try {
         const file = fs.readFileSync(dataFile, 'utf8');
@@ -329,23 +325,24 @@ logger.info('xMap', xMap);
 
 // 繪圖
 const RectChect = require('./chart/RectChart');
-const aRectChart = new RectChect(600, 300);
+const options = {
+    leftWidth: 50, rightWidth: 20, topHeight: 50, bottomHeight: 20,
+    rectColor :['#808080', '#B0C4DE', '#E6E6FA', '#FFF0F5', '#008080', '#6495ED']
+};
 
 let chartPos = [
-    { col:16, row:4 }, 
+    { col:16, row:2 }, 
     { col:16, row:20 }, 
 ];
 
 let counter = 0 ;
 _.forEach(xMap, (value, key) => {
-    console.log(key);
-    console.log(value);
-    // let xxx = aRectChart.getChartInfo();
-    aRectChart.setChartData(value);
-    aRectChart.setSiteId(key);
-    aRectChart.paint();
+    console.log(key, value);
+    const aRectChart = new RectChect(600, 300, options);
+    // console.log(aRectChart.getChartInfo());
+    // 繪製圖檔並產生png buffer    
+    aRectChart.setChartData(value).setSiteId(key).paint();
     const buffer = aRectChart.getCanvasBuffer();
-
     // 加入excel workbook
     const imageId2 = workbook.addImage({
         buffer: buffer,
