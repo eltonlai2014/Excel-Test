@@ -33,15 +33,16 @@ class CommonChart {
         return this.canvas.toBuffer(imageType);
     }
 
-    drawString(ctx, txt, x, y, size, font, color, align, base) {
+    drawString(ctx, txt, x, y, size, font, fontStyle, color, align, base) {
         // 畫字串
         color = color || "#000000";
         base = base || "bottom";
         align = align || "left";
         font = font || "Arial";
+        fontStyle = fontStyle || "";
         ctx.save();
         ctx.fillStyle = color;
-        ctx.font = size + "pt " + font;
+        ctx.font = fontStyle + " " + size + "pt " + font;
         ctx.textAlign = align;
         ctx.textBaseline = base;
         x = Math.round(x);
@@ -53,10 +54,11 @@ class CommonChart {
     }
 
 
-    drawBgString(ctx, txt, x, y, size, font, color, bgcolor, align, base) {
+    drawBgString(ctx, txt, x, y, size, font, fontStyle, color, bgcolor, align, base) {
         // 繪製底色方塊 + 字串
         bgcolor = bgcolor || "#999999";
-        ctx.font = size + "pt " + font;
+        fontStyle = fontStyle || "";        
+        ctx.font = fontStyle + " " + size + "pt " + font;
         // 計算字型寬/高
         const aWidth = ctx.measureText(txt).width;
         const aHeight = ctx.measureText('Ag').emHeightAscent;
@@ -77,7 +79,7 @@ class CommonChart {
         }
         ctx.fillStyle = bgcolor;
         ctx.fill();
-        return this.drawString(ctx, txt, x, y, size, font, color, align, base) + 4;
+        return this.drawString(ctx, txt, x, y, size, font, fontStyle,  color, align, base) + 4;
     }
 
     // 基礎 method，暫無方法關閉 antialias，不建議用

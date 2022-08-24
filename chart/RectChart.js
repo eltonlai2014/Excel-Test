@@ -21,14 +21,14 @@ class RectChart extends CommonChart {
         super.setChartData(data);
         this.chartData = data;
         // 遍歷各 event 計算最大值
-        let maxEventCount = 0;
+        this.maxEventCount = 0;
         this.eventList = [];
         _.forEach(this.chartData, (value, key) => {
             // logger.info('key', key, 'value', value);
             this.eventList.push(key);
-            maxEventCount = Math.max(maxEventCount, value.count);
+            this.maxEventCount = Math.max(this.maxEventCount, value.count);
         });
-        this.axisY_Max = this.getPrettyUnit(maxEventCount);
+        this.axisY_Max = this.getPrettyUnit(this.maxEventCount);
         return this;
     }
 
@@ -39,6 +39,8 @@ class RectChart extends CommonChart {
 
     paint() {
         logger.info('RectChart paint ...');
+        const fontStyle_Normal = '' ;
+        const fontStyle_Bold = 'bold' ;        
         // 背景色
         const aContext = this.context;
         aContext.fillStyle = '#ffffff';
@@ -48,7 +50,7 @@ class RectChart extends CommonChart {
         const title_FontSize = 16 ;
         const title_Font = 'Arial' ;
         const title_Color = '#000000';
-        this.drawString(aContext, this.site_id, this.leftWidth, this.topHeight / 2, title_FontSize, title_Font, title_Color, 'left', 'middle');
+        this.drawString(aContext, this.site_id, this.leftWidth, this.topHeight / 2, title_FontSize, title_Font, fontStyle_Normal, title_Color, 'left', 'middle');
 
         // X Y軸線
         const axisColor = '#000000';
@@ -68,9 +70,9 @@ class RectChart extends CommonChart {
                 this.dashedLineTo(aContext, this.leftWidth - 1, yPos, this.cWidth - this.rightWidth, yPos, axisColor, axisWidth);
             }
             // 座標
-            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, label_Color, 'right', 'middle');
+            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, fontStyle_Normal,  label_Color, 'right', 'middle');
         }
-        this.drawString(aContext, '0', this.leftWidth - 4, this.topHeight + this.chartHeight, axisY_FontSize, label_Font, label_Color, 'right', 'middle');
+        this.drawString(aContext, '0', this.leftWidth - 4, this.topHeight + this.chartHeight, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'middle');
 
         // 畫方塊
         const unitWidth = this.chartWidth / (this.eventList.length + 1);
@@ -84,10 +86,14 @@ class RectChart extends CommonChart {
             // this.clearLineTo(aContext, xPos, this.topHeight, xPos, this.topHeight + this.chartHeight);
             // 數值 Label
             // drawBgString(ctx, txt, x, y, size, font, color, bgcolor, align, base)
-            this.drawBgString(aContext, aInfo.count, xPos, this.topHeight + this.chartHeight - rechHeight - 2, 10, label_Font, label_Color, '#FFFFFF', 'center', 'bottom');
+            if (aInfo.count == this.maxEventCount && this.maxEventCount > 0) {
+                this.drawBgString(aContext, aInfo.count, xPos, this.topHeight + this.chartHeight - rechHeight - 2, 10, label_Font, fontStyle_Bold, '#FFFFFF', '#CC0000', 'center', 'bottom');
+            } else{
+                this.drawBgString(aContext, aInfo.count, xPos, this.topHeight + this.chartHeight - rechHeight - 2, 10, label_Font, fontStyle_Normal, label_Color, '#FFFFFF', 'center', 'bottom');
+            }
 
             // 畫 eventType Label
-            this.drawString(aContext, this.eventList[i], xPos, eventLabelYPos, 10, label_Font, label_Color, 'center', 'middle');
+            this.drawString(aContext, this.eventList[i], xPos, eventLabelYPos, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'middle');
         }
         return this;
     }
