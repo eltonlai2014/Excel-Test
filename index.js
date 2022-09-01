@@ -268,7 +268,7 @@ const imageId = workbook.addImage({
 });
 worksheet2.addImage(imageId, { tl: { col: 10, row: 10 }, ext: { width: 140, height: 90 } });
 
-// 讀取預設權限檔案
+// 讀取圖檔資訊
 let chartData = null;
 // read dataFile
 const dataFile = path.join('chart_data.json').normalize();
@@ -354,7 +354,42 @@ _.forEach(xMap, (value, key) => {
 });
 
 
+// 讀取圖檔資訊
+let chartData2 = null;
+// read dataFile
+const dataFile2 = path.join('ts_data.json').normalize();
+const hasFile2 = fs.existsSync(dataFile);
+logger.info('load dataFile', hasFile2, dataFile2);
+if (hasFile2) {
+    try {
+        const file = fs.readFileSync(dataFile2, 'utf8');
+        chartData2 = JSON.parse(file);
+    } catch (err) {
+        logger.error(err);
+    }
+}
+
+// 繪圖
+const TrendChect = require('./chart/TrendChart');
+const options2 = {
+    leftWidth: 50, rightWidth: 20, topHeight: 50, bottomHeight: 20,
+    rectColor :['#808080', '#B0C4DE', '#E6E6FA', '#FFF0F5', '#008080', '#6495ED']
+};
+
+// logger.info('chartData2', chartData2);
+const aTrendChect = new TrendChect(600, 300, options2);
+// 繪製圖檔並產生png buffer    
+aTrendChect.setChartData(chartData2).paint();
+const buffer = aTrendChect.getCanvasBuffer();
+
+    // 加入excel workbook
+    const imageId3 = workbook.addImage({
+        buffer: buffer,
+        extension: 'png',
+    });
+
+    worksheet.addImage(imageId3, { tl: { col: 2, row: 20 }, ext: { width: 600, height: 300 } });
+
 // 產生Excel檔案
 workbook.xlsx.writeFile("Debtors.xlsx");
-
 console.log("ok");
