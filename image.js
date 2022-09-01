@@ -18,3 +18,14 @@ context.fillText(text, 600, 170);
 
 const buffer = canvas.toBuffer('image/png');
 fs.writeFileSync('./test.png', buffer);
+
+
+const { TestEmitter2 }= require('./src/index');
+
+let aTest = new TestEmitter2({ name: 'elton' });
+aTest.startTimer(1000);
+
+aTest.on('Time', (data) => {
+	console.log('aTest onTime', data);
+})
+
