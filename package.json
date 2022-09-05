@@ -16,5 +16,8 @@
     "exceljs": "^4.3.0",
     "lodash": "^4.17.21",
     "log4js": "^6.6.1"
+  },
+  "devDependencies": {
+    "babelify": "^10.0.0"
   }
 }
