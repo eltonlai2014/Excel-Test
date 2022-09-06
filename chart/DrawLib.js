@@ -49,6 +49,34 @@ class DrawLib {
         return this.drawString(ctx, txt, x, y, size, font, fontStyle,  color, align, base) + 4;
     }
 
+    drawBgStringRoundRect(ctx, txt, x, y, size, font, fontStyle, color, bgcolor, align, base) {
+        // 繪製底色方塊 + 字串
+        bgcolor = bgcolor || "#999999";
+        fontStyle = fontStyle || "";        
+        ctx.font = fontStyle + " " + size + "pt " + font;
+        // 計算字型寬/高
+        const aWidth = ctx.measureText(txt).width;
+        const aHeight = ctx.measureText('Ag').emHeightAscent;
+        x = Math.round(x);
+        y = Math.round(y);
+        let rectPosY = y - aHeight - 3;
+        let rectHeight = aHeight + 3;
+        // 繪製底色方塊
+        ctx.beginPath();
+        if (align == "right") {
+            this.drawRoundRect(ctx, x - aWidth - 2, rectPosY, aWidth + 4, rectHeight, 4, true, bgcolor);
+        }
+        else if (align == "left") {
+            this.drawRoundRect(ctx, x - 2, rectPosY, aWidth + 4, rectHeight, 4, true, bgcolor);
+        }
+        else {
+            this.drawRoundRect(ctx, x - 2 - aWidth / 2, rectPosY, aWidth + 4, rectHeight, 4, true, bgcolor);
+        }
+        ctx.fillStyle = bgcolor;
+        ctx.fill();
+        return this.drawString(ctx, txt, x, y, size, font, fontStyle,  color, align, base) + 4;
+    }
+
     // 基礎 method，暫無方法關閉 antialias，不建議用
     // drawLine(ctx, x1, y1, x2, y2, color, width) {
     //     width = width || 1;
@@ -72,17 +100,17 @@ class DrawLib {
     // 圓角矩形
     drawRoundRect(ctx, x, y, width, height, radius, fill, fillStyle, stroke, lineWidth) {
         if (typeof stroke === "undefined") {
-            stroke = true;
+            stroke = false;
         }
         if (typeof fill === "undefined") {
             fill = false;
         }
         if (typeof radius === "undefined") {
-            radius = 5;
+            radius = 4;
         }
-        lineWidth = lineWidth || 1.2;
-        //x = Math.round(x);
-        //y = Math.round(y);
+        lineWidth = lineWidth || 1;
+        x = Math.round(x);
+        y = Math.round(y);
         ctx.save();
         ctx.translate(0.5, 0.5);
         ctx.beginPath();
@@ -142,42 +170,6 @@ class DrawLib {
         ctx.restore();
     }
 
-    // 虛線
-    /*
-    dashedLineToEx(ctx, fromX, fromY, toX, toY, lineColor, lineWidth, pattern) {
-        // default interval distance -> 5px
-        if (typeof pattern === "undefined") {
-            pattern = 5;
-        }
-        lineWidth = lineWidth || 1;
-        lineColor = lineColor || '#FFFFFF';
-        // 避免畫線時產生antialias，save()->translate()->restore()
-        ctx.save();
-        ctx.translate(0.5, 0.5);
-        // calculate the delta x and delta y
-        let dx = (toX - fromX);
-        let dy = (toY - fromY);
-        let distance = Math.floor(Math.sqrt(dx * dx + dy * dy));
-        let dashlineInteveral = (pattern <= 0) ? distance : (distance / pattern);
-        let deltay = (dy / distance) * pattern;
-        let deltax = (dx / distance) * pattern;
-        // draw dash line
-        ctx.beginPath();
-        for (let dl = 0; dl < dashlineInteveral; dl++) {
-            if (dl % 2) {
-                ctx.lineTo(Math.round(fromX + dl * deltax), Math.round(fromY + dl * deltay));
-            } else {
-                ctx.moveTo(Math.round(fromX + dl * deltax), Math.round(fromY + dl * deltay));
-            }
-
-        }
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = lineColor;
-        ctx.stroke();
-        ctx.restore();
-    }
-    */
-
     // 任意線段，避免antialias，用矩形模擬
     drawLineNoAliasing(ctx, sx, sy, tx, ty, lineColor) {
         lineColor = lineColor || '#FFFFFF';
@@ -211,7 +203,7 @@ class DrawLib {
     }
 
     // 座標取整數級距
-    getPrettyUnit(value) {
+    getPrettyUnit(value, aRatio) {
         if (value < 1) {
             return 0.1;
         }
@@ -221,7 +213,8 @@ class DrawLib {
         let nextUnit = Math.pow(10, Math.ceil(Math.log10(value)));
         let ratio = value * factor / unit;
         // 決定是否要換 下一個級距
-        if (ratio <= 7.5) {
+        aRatio = aRatio || 7.5;
+        if (ratio <= aRatio) {
             return Math.ceil(value * factor / unit) * unit;
         }
         return nextUnit;
