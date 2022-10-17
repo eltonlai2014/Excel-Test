@@ -15,7 +15,8 @@
     "canvas-5-polyfill": "^0.1.5",
     "exceljs": "^4.3.0",
     "lodash": "^4.17.21",
-    "log4js": "^6.6.1"
+    "log4js": "^6.6.1",
+    "moment": "^2.29.4"
   },
   "devDependencies": {
     "babelify": "^10.0.0"

@@ -16,11 +16,20 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "image",
+      "name": "pdf",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\image.js"
+      "program": "${workspaceFolder}\\pdf.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "thread",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\ThreadTest.js"      
     },
     {
       "type": "node",
