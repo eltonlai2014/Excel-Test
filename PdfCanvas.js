@@ -113,6 +113,16 @@ class PdfCanvas extends DrawLib {
         return this;
     }
 
+    drawYAxis_Debug() {
+        let aFontSize = 10;
+        let aFont = 'Microsoft Sans Serif';
+        let aFontStyle = '';
+        let unit = 20;
+        for (let i = 0; i < this.cHeight; i += unit) {
+            this.drawString(this.context, i, 4, i, aFontSize, aFont, aFontStyle, '#000000', 'left', 'bottom');
+        }
+    }
+
     paint() {
         let aFontSize = 14;
         let aFont = 'Microsoft Sans Serif';
@@ -121,9 +131,9 @@ class PdfCanvas extends DrawLib {
         this.drawRectImg();
         this.drawString(this.context, 'Hello World 中文', this.leftWidth, this.topHeight + this.chartHeight + this.bottomHeight + 30, aFontSize, aFont, aFontStyle, '#CC0000', 'left', 'bottom');
 
-
         // Now on second page
         this.context.addPage();
+        this.drawYAxis_Debug();
 
         // a table to draw
         let rows = 10;

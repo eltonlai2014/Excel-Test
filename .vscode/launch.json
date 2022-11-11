@@ -16,6 +16,15 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "pdf",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\pdf.js"
+    },		
+    {
+      "type": "node",
+      "request": "launch",
       "name": "image",
       "skipFiles": [
         "<node_internals>/**"
