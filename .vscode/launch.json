@@ -7,6 +7,15 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "style",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\style.js"
+    },    
+    {
+      "type": "node",
+      "request": "launch",
       "name": "index",
       "skipFiles": [
         "<node_internals>/**"
