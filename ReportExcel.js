@@ -207,14 +207,11 @@ class ReportExcel {
                 }
             }
 
-
+            // 繪圖
             const options2 = {
                 leftWidth: 50, rightWidth: 20, topHeight: 20, bottomHeight: 70,
                 rectColor: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED']
             };
-
-            // logger.info('chartData2', chartData2);
-            // 繪圖
             const aSiteChect = new SiteChect(540, 300, options2);
             // 繪製圖檔並產生png buffer
             aSiteChect.setChartData(report.reportData).paint();
@@ -226,6 +223,10 @@ class ReportExcel {
                 extension: 'png',
             });
             outputSheet.addImage(imageId3, { tl: { col: 7.5, row: 13 }, ext: { width: 540, height: 300 } });
+
+            // ====================================================================================================
+            // 站台營運服務狀態
+            // ====================================================================================================
 
 
             startRow += 10;
