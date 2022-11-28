@@ -44,31 +44,31 @@ class TrendChart extends CommonChart {
         return this;
     }
 
-    timeToX(aInfo){
-        let scale = ((aInfo.time - this.startTime)/ (this.endTime - this.startTime));
-        if(scale>1){
+    timeToX(aInfo) {
+        let scale = ((aInfo.time - this.startTime) / (this.endTime - this.startTime));
+        if (scale > 1) {
             console.log(aInfo.time, this.startTime, this.endTime);
         }
-        return Math.round(((aInfo.time - this.startTime)/ (this.endTime - this.startTime)) * this.chartWidth);
+        return Math.round(((aInfo.time - this.startTime) / (this.endTime - this.startTime)) * this.chartWidth);
     }
 
-    getChartInfo(){
+    getChartInfo() {
         console.log(this.leftWidth, this.chartWidth, this.rightWidth);
         console.log(this.topHeight, this.chartHeight, this.bottomHeight);
     }
     paint() {
         logger.info('RectChart paint ...');
         this.getChartInfo();
-        const fontStyle_Normal = '' ;
-        const fontStyle_Bold = 'bold' ;        
+        const fontStyle_Normal = '';
+        const fontStyle_Bold = 'bold';
         // 背景色
         const aContext = this.context;
         aContext.fillStyle = '#ffffff';
         aContext.fillRect(0, 0, this.cWidth, this.cHeight);
 
         // 圖標題
-        const title_FontSize = 16 ;
-        const title_Font = 'Arial' ;
+        const title_FontSize = 16;
+        const title_Font = 'Arial';
         const title_Color = '#000000';
         this.drawString(aContext, this.site_id, this.leftWidth, this.topHeight / 2, title_FontSize, title_Font, fontStyle_Normal, title_Color, 'left', 'middle');
 
@@ -79,9 +79,9 @@ class TrendChart extends CommonChart {
         this.clearLineTo(aContext, this.leftWidth - 1, this.topHeight + this.chartHeight, this.cWidth - this.rightWidth, this.topHeight + this.chartHeight, axisColor, axisWidth);
 
         // 畫Y軸座標與水平線
-        const axisY_FontSize = 10 ;
+        const axisY_FontSize = 10;
         const yLines = 5;
-        const label_Font = 'Arial' ;
+        const label_Font = 'Arial';
         const label_Color = '#000000';
         for (let i = 0; i < yLines; i++) {
             const yPos = this.topHeight + i * this.chartHeight / yLines;
@@ -90,26 +90,26 @@ class TrendChart extends CommonChart {
                 this.dashedLineTo(aContext, this.leftWidth - 1, yPos, this.cWidth - this.rightWidth, yPos, axisColor, axisWidth);
             }
             // 座標
-            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, fontStyle_Normal,  label_Color, 'right', 'middle');
+            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'middle');
         }
         this.drawString(aContext, '0', this.leftWidth - 4, this.topHeight + this.chartHeight, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'middle');
 
         // 畫趨勢圖
         aContext.save();
-        let fromX = null ;
-        let fromY = null ;
+        let fromX = null;
+        let fromY = null;
         for (let i = 0; i < this.chartData.length; i++) {
             let aInfo = this.chartData[i];
             let xPos = this.leftWidth + this.timeToX(aInfo);
-            let yPos =  this.topHeight + (aInfo.i / this.maxValue) * this.chartHeight;
+            let yPos = this.topHeight + (aInfo.i / this.maxValue) * this.chartHeight;
             // console.log(xPos, yPos, aInfo.time);
-            if(fromX !=null && fromY!=null){      
-                this.clearLineTo(aContext, fromX, fromY, xPos, yPos, '#FF0000', 1); 
+            if (fromX != null && fromY != null) {
+                this.clearLineTo(aContext, fromX, fromY, xPos, yPos, '#FF0000', 1);
             }
             fromX = xPos;
             fromY = yPos;
         }
-        aContext.restore();        
+        aContext.restore();
 
         return this;
     }

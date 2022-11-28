@@ -24,7 +24,7 @@ class DrawLib {
     drawBgString(ctx, txt, x, y, size, font, fontStyle, color, bgcolor, align, base) {
         // 繪製底色方塊 + 字串
         bgcolor = bgcolor || "#999999";
-        fontStyle = fontStyle || "";        
+        fontStyle = fontStyle || "";
         ctx.font = fontStyle + " " + size + "pt " + font;
         // 計算字型寬/高
         const aWidth = ctx.measureText(txt).width;
@@ -46,13 +46,13 @@ class DrawLib {
         }
         ctx.fillStyle = bgcolor;
         ctx.fill();
-        return this.drawString(ctx, txt, x, y, size, font, fontStyle,  color, align, base) + 4;
+        return this.drawString(ctx, txt, x, y, size, font, fontStyle, color, align, base) + 4;
     }
 
     drawBgStringRoundRect(ctx, txt, x, y, size, font, fontStyle, color, bgcolor, align, base) {
         // 繪製底色方塊 + 字串
         bgcolor = bgcolor || "#999999";
-        fontStyle = fontStyle || "";        
+        fontStyle = fontStyle || "";
         ctx.font = fontStyle + " " + size + "pt " + font;
         // 計算字型寬/高
         const aWidth = ctx.measureText(txt).width;
@@ -74,7 +74,7 @@ class DrawLib {
         }
         ctx.fillStyle = bgcolor;
         ctx.fill();
-        return this.drawString(ctx, txt, x, y, size, font, fontStyle,  color, align, base) + 4;
+        return this.drawString(ctx, txt, x, y, size, font, fontStyle, color, align, base) + 4;
     }
 
     // 基礎 method，暫無方法關閉 antialias，不建議用

@@ -39,16 +39,16 @@ class RectChart extends CommonChart {
 
     paint() {
         logger.info('RectChart paint ...');
-        const fontStyle_Normal = '' ;
-        const fontStyle_Bold = 'bold' ;        
+        const fontStyle_Normal = '';
+        const fontStyle_Bold = 'bold';
         // 背景色
         const aContext = this.context;
         aContext.fillStyle = '#ffffff';
         aContext.fillRect(0, 0, this.cWidth, this.cHeight);
 
         // 圖標題
-        const title_FontSize = 16 ;
-        const title_Font = 'Arial' ;
+        const title_FontSize = 16;
+        const title_Font = 'Arial';
         const title_Color = '#000000';
         this.drawString(aContext, this.site_id, this.leftWidth, this.topHeight / 2, title_FontSize, title_Font, fontStyle_Normal, title_Color, 'left', 'middle');
 
@@ -59,9 +59,9 @@ class RectChart extends CommonChart {
         this.clearLineTo(aContext, this.leftWidth - 1, this.topHeight + this.chartHeight, this.cWidth - this.rightWidth, this.topHeight + this.chartHeight, axisColor, axisWidth);
 
         // 畫Y軸座標與水平線
-        const axisY_FontSize = 10 ;
+        const axisY_FontSize = 10;
         const yLines = 5;
-        const label_Font = 'Arial' ;
+        const label_Font = 'Arial';
         const label_Color = '#000000';
         for (let i = 0; i < yLines; i++) {
             const yPos = this.topHeight + i * this.chartHeight / yLines;
@@ -70,7 +70,7 @@ class RectChart extends CommonChart {
                 this.dashedLineTo(aContext, this.leftWidth - 1, yPos, this.cWidth - this.rightWidth, yPos, axisColor, axisWidth);
             }
             // 座標
-            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, fontStyle_Normal,  label_Color, 'right', 'middle');
+            this.drawString(aContext, (yLines - i) * this.axisY_Max / yLines, this.leftWidth - 4, yPos, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'middle');
         }
         this.drawString(aContext, '0', this.leftWidth - 4, this.topHeight + this.chartHeight, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'middle');
 
@@ -88,7 +88,7 @@ class RectChart extends CommonChart {
             // drawBgString(ctx, txt, x, y, size, font, color, bgcolor, align, base)
             if (aInfo.count == this.maxEventCount && this.maxEventCount > 0) {
                 this.drawBgString(aContext, aInfo.count, xPos, this.topHeight + this.chartHeight - rechHeight - 2, 10, label_Font, fontStyle_Bold, '#FFFFFF', '#CC0000', 'center', 'bottom');
-            } else{
+            } else {
                 this.drawBgString(aContext, aInfo.count, xPos, this.topHeight + this.chartHeight - rechHeight - 2, 10, label_Font, fontStyle_Normal, label_Color, '#FFFFFF', 'center', 'bottom');
             }
 

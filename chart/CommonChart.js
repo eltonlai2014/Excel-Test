@@ -2,10 +2,10 @@ const log4js = require('log4js');
 const logger = log4js.getLogger('CommonChart');
 const { createCanvas, loadImage } = require('canvas');
 const DrawLib = require('./DrawLib');
-class CommonChart extends DrawLib{
+class CommonChart extends DrawLib {
 
     constructor(cWidth, cHeight, options) {
-			  super();
+        super();
         this.cWidth = cWidth;
         this.cHeight = cHeight;
         this.init(options);
