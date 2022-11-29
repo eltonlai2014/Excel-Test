@@ -13,7 +13,7 @@ class SiteChart extends CommonChart {
     myInit(options) {
         logger.info('SiteChart init');
         // 方塊顏色
-        this.rectColor = options.rectColor || ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED'];
+        this.chartColor = options.chartColor || ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED'];
     }
 
     setChartData(data) {
@@ -50,8 +50,9 @@ class SiteChart extends CommonChart {
         const fontStyle_Normal = '';
         const fontStyle_Bold = 'bold';
         // 背景色
+        const bgColor = '#ffffff';
         const aContext = this.context;
-        aContext.fillStyle = '#ffffff';
+        aContext.fillStyle = bgColor;
         aContext.fillRect(0, 0, this.cWidth, this.cHeight);
 
         // 外框線
@@ -91,34 +92,65 @@ class SiteChart extends CommonChart {
         }
         // 最小值座標
         this.drawString(aContext, '0', this.leftWidth - 4, this.topHeight + this.chartHeight + 2, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'bottom');
-        this.drawString(aContext, 'Sites', this.leftWidth - 4, this.topHeight + this.chartHeight + 4, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'top');
+        this.drawString(aContext, 'Sites', this.leftWidth - 4, this.topHeight + this.chartHeight + 18, axisY_FontSize, label_Font, fontStyle_Normal, label_Color, 'right', 'top');
 
-        // 畫趨勢圖
+        // 畫圖
         aContext.save();
         const unitWidth = this.chartWidth / this.chartData.length;
         let key = ['Health', 'Warning', 'Critical', 'Total'];
         let chartWidth = 4;
         for (let j = 0; j < key.length; j++) {
             let aKey = key[j];
-            let fromX = null;
-            let fromY = null;
-            for (let i = 0; i < this.chartData.length; i++) {
-                let aInfo = this.chartData[i];
-                const xPos = this.leftWidth + (i + 0.5) * unitWidth;
-                // this.axisY_Max
-                let yPos = this.topHeight + ((this.axisY_Max - aInfo[aKey]) / this.axisY_Max) * this.chartHeight;
-                // console.log(xPos, yPos, aInfo.time);
-                if (fromX != null && fromY != null) {
-                    this.clearLineTo(aContext, fromX, fromY, xPos, yPos, this.rectColor[(j % this.rectColor.length)], chartWidth);
-                }
-                fromX = xPos;
-                fromY = yPos;
+            if (this.chartData.length == 1) {
+                // 只有一筆資料，畫長條圖
+                let aInfo = this.chartData[0];
+                const rectWidth = this.chartWidth / (key.length + 2);
+                const xPos = this.leftWidth + (j + 1.5) * rectWidth;
+                const rechHeight = (aInfo[aKey] / this.axisY_Max) * this.chartHeight;
+                this.fillRectEx(aContext, xPos - rectWidth * 0.3, this.topHeight + this.chartHeight, rectWidth * 0.6, -rechHeight, this.chartColor[(j % this.chartColor.length)]);
 
+                // 畫數值 Label
+                const yPos = this.topHeight + this.chartHeight - rechHeight - 4;
+                // this.drawString(aContext, aInfo[aKey], xPos, yPos, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'bottom');
+                this.drawBgString(aContext, aInfo[aKey], xPos, yPos, 10, label_Font, fontStyle_Normal, label_Color, bgColor, 'center', 'bottom');
                 // 日期Label
                 if (j == 0) {
-                    this.drawString(aContext, aInfo.Month, xPos, this.topHeight + this.chartHeight + 4, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'top');
+                    this.drawString(aContext, aInfo.Month, this.leftWidth + this.chartWidth / 2, this.topHeight + this.chartHeight + 18, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'top');
                 }
+
+            } else {
+                // 多筆資料，繪製趨勢圖
+                let fromX = null;
+                let fromY = null;
+                for (let i = 0; i < this.chartData.length; i++) {
+                    let aInfo = this.chartData[i];
+                    const xPos = this.leftWidth + (i + 0.5) * unitWidth;
+                    let yPos = this.topHeight + ((this.axisY_Max - aInfo[aKey]) / this.axisY_Max) * this.chartHeight;
+                    // console.log(xPos, yPos, aInfo.time);
+                    if (fromX != null && fromY != null) {
+                        this.clearLineTo(aContext, fromX, fromY, xPos, yPos, this.chartColor[(j % this.chartColor.length)], chartWidth);
+                    }
+                    fromX = xPos;
+                    fromY = yPos;
+                }
+                for (let i = 0; i < this.chartData.length; i++) {
+                    let aInfo = this.chartData[i];
+                    const xPos = this.leftWidth + (i + 0.5) * unitWidth;
+                    let yPos = this.topHeight + ((this.axisY_Max - aInfo[aKey]) / this.axisY_Max) * this.chartHeight;
+                    // 畫數值 Label
+                    let offset = -4;
+                    if (j % 2 == 0) {
+                        offset = 20;
+                    }
+                    // this.drawString(aContext, aInfo[aKey], xPos, yPos , 10, label_Font, fontStyle_Normal, label_Color, 'center', 'middle');
+                    this.drawBgString(aContext, aInfo[aKey], xPos, yPos + offset, 10, label_Font, fontStyle_Normal, this.chartColor[(j % this.chartColor.length)], bgColor, 'center', 'bottom');
+                    // 日期Label
+                    if (j == 0) {
+                        this.drawString(aContext, aInfo.Month, xPos, this.topHeight + this.chartHeight + 18, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'top');
+                    }
+                }                
             }
+
         }
 
         // 畫圖例說明
@@ -129,7 +161,7 @@ class SiteChart extends CommonChart {
         for (let i = 0; i < key.length; i++) {
             let xPos = this.leftWidth + (this.chartWidth / key.length) * i;
             this.drawString(aContext, key[i], xPos + hintWidth + 4, yPos, 10, label_Font, fontStyle_Normal, label_Color, 'left', 'moddle');
-            this.fillRectEx(aContext, xPos, yPos - hintHeight - 2, hintWidth, hintHeight, this.rectColor[i]);
+            this.fillRectEx(aContext, xPos, yPos - hintHeight - 2, hintWidth, hintHeight, this.chartColor[i]);
         }
 
         aContext.restore();

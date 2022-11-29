@@ -54,10 +54,20 @@ const start = async () => {
         { Month: 202208, Health: 98, Warning: 2, Critical: 3 }
     ]
 
+    report.reportData2 = [
+        { Month: 202207, Health: 94, Warning: 0, Critical: 6 },
+        { Month: 202206, Health: 88, Warning: 5, Critical: 7 },
+        { Month: 202208, Health: 98, Warning: 3, Critical: 1 }
+    ]
+
     // 指定報表樣式檔
     const options = {
         StyleFile: 'Style.xlsx',
         StyleSheet: 'Style',
+        OperationBlock: true,
+        NetworkDeviceBlock: true,
+        CriticalEventBlock: true,
+        WarningEventBlock: false,
     }
     const aExcel = new ReportExcel(options);
     // 設定資料與產生報表
@@ -67,12 +77,12 @@ const start = async () => {
 
     // 存檔
     try {
-        fs.writeFileSync('styleTest.xlsx', buffer);   
+        fs.writeFileSync('styleTest.xlsx', buffer);
         console.log("ok");
     } catch (err) {
         console.error(err);
     }
-    
+
 }
 
 start();
