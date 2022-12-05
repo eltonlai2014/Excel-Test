@@ -18,20 +18,66 @@ class ReportExcel {
         return defaultValue;
     }
     genReport(report) {
+        const fillCell = (aRow, dataIndex, col, value, style_even, style) =>{
+            let aCell = aRow.getCell(col);
+            if (dataIndex % 2 == 0) {
+                aCell.style = style_even;
+            } else {
+                aCell.style = style;
+            }
+            if(value == undefined){
+                value = '';
+            }            
+            aCell.value = value;
+            return aCell;
+        }
+
+        const fillTitleCell = (aRow, col, value, style) => {
+            let aCell = aRow.getCell(col);
+            aCell.style = style;
+            aCell.value = value;
+            return aCell;
+        }
+
+        const buildRankMap = (data) => {
+            let rMap = {};
+            for (let i = 0; i < data.RankList.length; i++) {
+                let aEventType = data.RankList[i].EventType;
+                let aRankList = data.RankList[i].Rank;
+                rMap[aEventType] = aRankList;
+            }
+            // console.log('rMap', rMap);
+            return rMap;       
+        }
+
+        const getRankValue = (rMap, eventType, rankOrder) => {
+            let aRankList = rMap[eventType];
+            if(aRankList == null){
+                aRankList = [];
+            }
+            if(aRankList[rankOrder] != undefined){
+                return aRankList[rankOrder];
+            }
+            return { SiteId: '', SiteName: ''};
+        }
+
+
         return new Promise(async (resolve, reject) => {
             this.report = report;
             logger.info('ReportExcel init', this.options);
             // 依據選擇區塊計算白底列數
-            let totalRows = 11;                                                    // 11 title block
+            let totalRows = 11;                                                         // 11 title block
             let OperationBlock = this.getParamValue('OperationBlock', true);            // 19
             let NetworkDeviceBlock = this.getParamValue('NetworkDeviceBlock', true);    // 19
             let CriticalEventBlock = this.getParamValue('CriticalEventBlock', true);    // 41
             let WarningEventBlock = this.getParamValue('WarningEventBlock', true);      // 41
             if(OperationBlock) {
-                totalRows+= 19;
+                // 這裡需要看有幾個月的資料
+                totalRows+= (16 + report.reportData.length);
             }
             if(NetworkDeviceBlock) {
-                totalRows+= 19;
+                // 這裡需要看有幾個月的資料
+                totalRows+= (16 + report.reportData2.length);
             }
             if(CriticalEventBlock) {
                 totalRows+= 41;
@@ -45,6 +91,18 @@ class ReportExcel {
             await this.workbook.xlsx.readFile(this.options.StyleFile);
             const worksheet = this.workbook.getWorksheet(this.options.StyleSheet);
 
+            // 定義事件分類
+            const ETYPE_Total = 99 ;
+            const ETYPE_Device_Unreachable = 1 ;
+            const ETYPE_Network_Alert = 2 ;
+            const ETYPE_Ethernet_Port_Alert = 3 ;
+            const ETYPE_Fiber_Port_Alert = 4 ;
+            const ETYPE_Power_Supply_Alert = 5 ;
+            const ETYPE_Network_Intrusion_Alert = 6 ;
+            const ETYPE_Device_Security_Alert = 7 ;
+            const ETYPE_Device_Status_Alert = 8 ;
+            const ETYPE_MXview_One_Server_Alert = 9 ;
+            const ETYPE_GOOSE = 10 ;
             // [繪圖物件準備]
             const chartWidth = 540;
             const chartHeight = 300;
@@ -369,6 +427,7 @@ class ReportExcel {
             // Critical Event 發生次數 Top 10
             // ====================================================================================================
             if(CriticalEventBlock) {
+                let rMap = buildRankMap(report.reportData3);
                 aRow = outputSheet.getRow(startRow);
                 outputSheet.mergeCells(`C${startRow}:M${startRow}`);
                 aCell = aRow.getCell(3);
@@ -391,15 +450,21 @@ class ReportExcel {
                         fillTitleCell(aRow, 13, 'Ethernet port alert', tableTitle2_R);
 
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Total, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
 
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 12, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 13, i, tableBody2_R_even, tableBody2_R);
+                        rankInfo = getRankValue(rMap, ETYPE_Device_Unreachable, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Network_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Ethernet_Port_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
@@ -418,15 +483,21 @@ class ReportExcel {
                         fillTitleCell(aRow, 13, 'Device security alert', tableTitle2_R);
 
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Fiber_Port_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
 
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 12, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 13, i, tableBody2_R_even, tableBody2_R);
+                        rankInfo = getRankValue(rMap, ETYPE_Power_Supply_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Network_Intrusion_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Device_Security_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
@@ -441,22 +512,27 @@ class ReportExcel {
                         fillTitleCell(aRow, 9, 'Site', tableTitle2_L);
                         fillTitleCell(aRow, 10, 'GOOSE', tableTitle2_R);
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Device_Status_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_MXview_One_Server_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_GOOSE, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
             }
 
-
             // ====================================================================================================
             // Warning Event 發生次數 Top 10
             // ====================================================================================================
             if(WarningEventBlock) {
+                let rMap = buildRankMap(report.reportData4);
                 aRow = outputSheet.getRow(startRow);
                 outputSheet.mergeCells(`C${startRow}:M${startRow}`);
                 aCell = aRow.getCell(3);
@@ -479,15 +555,21 @@ class ReportExcel {
                         fillTitleCell(aRow, 13, 'Ethernet port alert', tableTitle2_R);
 
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Total, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
 
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 12, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 13, i, tableBody2_R_even, tableBody2_R);
+                        rankInfo = getRankValue(rMap, ETYPE_Device_Unreachable, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Network_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Ethernet_Port_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
@@ -506,15 +588,21 @@ class ReportExcel {
                         fillTitleCell(aRow, 13, 'Device security alert', tableTitle2_R);
 
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Fiber_Port_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
 
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 12, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 13, i, tableBody2_R_even, tableBody2_R);
+                        rankInfo = getRankValue(rMap, ETYPE_Power_Supply_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Network_Intrusion_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_Device_Security_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
@@ -529,12 +617,17 @@ class ReportExcel {
                         fillTitleCell(aRow, 9, 'Site', tableTitle2_L);
                         fillTitleCell(aRow, 10, 'GOOSE', tableTitle2_R);
                     } else {
-                        fillCell(aRow, i, 3, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 4, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 6, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 7, i, tableBody2_R_even, tableBody2_R);
-                        fillCell(aRow, i, 9, i, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i, 10, i, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = getRankValue(rMap, ETYPE_Device_Status_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_MXview_One_Server_Alert, i - startRow - 1);
+                        fillCell(aRow, i, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+
+                        rankInfo = getRankValue(rMap, ETYPE_GOOSE, i - startRow - 1);
+                        fillCell(aRow, i, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
                     }
                 }
                 startRow += 13;
@@ -549,25 +642,6 @@ class ReportExcel {
             this.workbook.removeWorksheet(worksheet.id);
             resolve(true);
         });
-
-
-        function fillCell(aRow, dataIndex, col, value, style_even, style) {
-            let aCell = aRow.getCell(col);
-            if (dataIndex % 2 == 0) {
-                aCell.style = style_even;
-            } else {
-                aCell.style = style;
-            }
-            aCell.value = value;
-            return aCell;
-        }
-
-        function fillTitleCell(aRow, col, value, style) {
-            let aCell = aRow.getCell(col);
-            aCell.style = style;
-            aCell.value = value;
-            return aCell;
-        }
     }
 
     async getReportBuffer() {

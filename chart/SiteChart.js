@@ -133,6 +133,10 @@ class SiteChart extends CommonChart {
                     fromX = xPos;
                     fromY = yPos;
                 }
+                let monthOffset = false;
+                if (this.chartData.length > 6) {
+                    monthOffset = true;
+                }
                 for (let i = 0; i < this.chartData.length; i++) {
                     let aInfo = this.chartData[i];
                     const xPos = this.leftWidth + (i + 0.5) * unitWidth;
@@ -146,7 +150,13 @@ class SiteChart extends CommonChart {
                     this.drawBgString(aContext, aInfo[aKey], xPos, yPos + offset, 10, label_Font, fontStyle_Normal, this.chartColor[(j % this.chartColor.length)], bgColor, 'center', 'bottom');
                     // 日期Label
                     if (j == 0) {
-                        this.drawString(aContext, aInfo.Month, xPos, this.topHeight + this.chartHeight + 18, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'top');
+                        let dateLabel = aInfo.Month.toString();
+                        if(monthOffset) {
+                            if(dateLabel.length == 6){
+                                dateLabel = dateLabel.substring(4);
+                            }
+                        }
+                        this.drawString(aContext, dateLabel, xPos, this.topHeight + this.chartHeight + 18, 10, label_Font, fontStyle_Normal, label_Color, 'center', 'top');
                     }
                 }                
             }
