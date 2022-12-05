@@ -206,7 +206,7 @@ class DrawLib {
     getPrettyUnit(value, aRatio) {
         if (value < 1) {
             return 0.1;
-        }
+        }      
         // 最大值 放大比率
         let factor = 1.1;
         let unit = Math.pow(10, Math.floor(Math.log10(value)));

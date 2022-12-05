@@ -5,7 +5,7 @@ const logger = log4js.getLogger('ReportExcel');
 const Excel = require('exceljs');
 const SiteChect = require('./chart/SiteChart');
 
-class ReportExcel {
+class ReportExcelSite {
 
     constructor(options) {
         this.options = options;
@@ -69,7 +69,8 @@ class ReportExcel {
             let totalRows = 11;                                                         // 11 title block
             let OperationBlock = this.getParamValue('OperationBlock', true);            // 19
             let NetworkDeviceBlock = this.getParamValue('NetworkDeviceBlock', true);    // 19
-            let CriticalEventBlock = this.getParamValue('CriticalEventBlock', true);    // 41
+            let EventTypeBlock = this.getParamValue('EventTypeBlock', true);            // 17
+            let EventRankBlock = this.getParamValue('EventRankBlock', true);            // 17
             let WarningEventBlock = this.getParamValue('WarningEventBlock', true);      // 41
             if(OperationBlock) {
                 // 這裡需要看有幾個月的資料
@@ -79,8 +80,8 @@ class ReportExcel {
                 // 這裡需要看有幾個月的資料
                 totalRows+= (16 + report.reportData2.length);
             }
-            if(CriticalEventBlock) {
-                totalRows+= 41;
+            if(EventTypeBlock || EventRankBlock) {
+                totalRows+= 17;
             }
             if(WarningEventBlock) {
                 totalRows+= 41;
@@ -128,24 +129,28 @@ class ReportExcel {
 
             const reportTitle = worksheet.getCell('H3').style;
             const reportSummary = worksheet.getCell('C7').style;
-            const blockTitle = worksheet.getCell('C12').style;
-            const blockContent = worksheet.getCell('F12').style;
+            const blockTitle = worksheet.getCell('C13').style;
+            const blockContent = worksheet.getCell('F13').style;
             const tableTitle_L = worksheet.getCell('C23').style;
             const tableBody_L = worksheet.getCell('C24').style;
             const tableTitle_R = worksheet.getCell('D23').style;
             const tableBody_R = worksheet.getCell('D24').style;
 
-            const tableTitle2_L = worksheet.getCell('C52').style;
-            const tableTitle2_R = worksheet.getCell('D52').style;
-            const tableBody2_L = worksheet.getCell('C53').style;
-            const tableBody2_R = worksheet.getCell('D53').style;
-            const tableBody2_L_even = worksheet.getCell('C54').style;
-            const tableBody2_R_even = worksheet.getCell('D54').style;
+            const tableTitle2_L = worksheet.getCell('C53').style;
+            const tableTitle2_R = worksheet.getCell('E53').style;
+            const tableFooter2_L = worksheet.getCell('C63').style;
+            const tableFooter2_R = worksheet.getCell('E63').style;            
+            const tableBody2_L = worksheet.getCell('C54').style;
+            const tableBody2_R = worksheet.getCell('E54').style;
+            const tableBody2_L_even = worksheet.getCell('C55').style;
+            const tableBody2_R_even = worksheet.getCell('E55').style;
 
-            const ServiceSummaryRows = 7;
+
+
+            const ServiceSummaryRows = 6;
 
             // 產生新的活頁表
-            let outputSheet = this.workbook.addWorksheet("台電測試站", {
+            let outputSheet = this.workbook.addWorksheet(report.siteName, {
                 pageSetup: { paperSize: 12 }
             });
 
@@ -180,7 +185,7 @@ class ReportExcel {
             let startRow = 3;
             let aRow = outputSheet.getRow(startRow);
             let aCell = aRow.getCell(8);
-            aCell.value = '公司報表_台電';
+            aCell.value = `站台報表 _ ${report.siteName}`;
             aCell.style = reportTitle;
             aCell.font = reportTitle.font;
             startRow += 2;
@@ -188,7 +193,7 @@ class ReportExcel {
             // ====================================================================================================
             // 報表Summary
             // ====================================================================================================
-            const SummaryRows = 5;
+            const SummaryRows = 6;
             for (let i = startRow; i < startRow + SummaryRows; i++) {
                 let aRow = outputSheet.getRow(i);
                 // 填滿區塊底色
@@ -206,10 +211,16 @@ class ReportExcel {
                     case startRow + 2: {
                         outputSheet.mergeCells(`C${i}:F${i}`);
                         let aCell = aRow.getCell(3);
+                        aCell.value = `  站台　${report.siteName}`;
+                        break;
+                    }                    
+                    case startRow + 3: {
+                        outputSheet.mergeCells(`C${i}:F${i}`);
+                        let aCell = aRow.getCell(3);
                         aCell.value = `  報表產生時間　${report.reportDate}`;
                         break;
                     }
-                    case startRow + 3: {
+                    case startRow + 4: {
                         outputSheet.mergeCells(`C${i}:F${i}`);
                         let aCell = aRow.getCell(3);
                         aCell.value = `  報告內容時間　${report.reportSDate}~${report.reportEate}`;
@@ -232,7 +243,7 @@ class ReportExcel {
                 const imgStartRow = startRow + 1;
                 startRow += 2;
                 // [服務狀態說明]
-                const expressLabel = [`  各站台 MXview 主機營運狀況`, `  以是否發生 MXview One Server Alert 區分`, `  Critical Site  當月發生過 Critical Event`,
+                const expressLabel = [`  以是否發生 MXview One Server Alert 區分`, `  Critical Site  當月發生過 Critical Event`,
                     `  Warning Site  當月未發生Critical Event 但有 Warning Event`, `  Health Site  當月未發生 Critical Event 和 Warning Event`,
                 ];
                 for (let i = startRow; i < startRow + ServiceSummaryRows; i++) {
@@ -249,7 +260,6 @@ class ReportExcel {
                         case startRow + 2:
                         case startRow + 3:
                         case startRow + 4:
-                        case startRow + 5:
                             outputSheet.mergeCells(`C${i}:G${i}`);
                             let aCell = aRow.getCell(3);
                             aCell.value = expressLabel[i - startRow - 1];
@@ -260,16 +270,17 @@ class ReportExcel {
                 startRow += 2;
 
                 // [彙總數字]
-                let title = ['', 'Health Site', 'Warning Site', 'Critical Site', 'Total'];
+                let title = ['', 'Warning Event', 'Critical Event', '','Site Status'];
                 for (let i = 0; i < report.reportData.length; i++) {
                     let aInfo = report.reportData[i];
-                    aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
+                    aInfo.Total = aInfo.Warning + aInfo.Critical;
                 }
                 // 將資料依照日期排序
                 report.reportData = _.sortBy(report.reportData, ['Month']);
 
                 for (let i = startRow; i <= startRow + (report.reportData.length + 1); i++) {
                     let aRow = outputSheet.getRow(i);
+                    outputSheet.mergeCells(`F${i}:G${i}`);
                     switch (i) {
                         case startRow: {
                             // 表格標題
@@ -289,16 +300,20 @@ class ReportExcel {
                                 aCell.value = aInfo.Month;
                                 aCell = aRow.getCell(4);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Health;
+                                aCell.value = aInfo.Warning;
                                 aCell = aRow.getCell(5);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Warning;
+                                aCell.value = aInfo.Critical;
                                 aCell = aRow.getCell(6);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Critical;
-                                aCell = aRow.getCell(7);
-                                aCell.style = tableBody_R;
-                                aCell.value = aInfo.Total;
+                                let siteStatus = 'Health Site';                             
+                                if(aInfo.Warning > 0) {
+                                    siteStatus = 'Warning Site'
+                                }
+                                if(aInfo.Critical > 0) {
+                                    siteStatus = 'Critical Site'
+                                }                                   
+                                aCell.value = siteStatus;
                             }
 
                             break;
@@ -307,7 +322,7 @@ class ReportExcel {
 
                 // [繪圖]
                 // 繪製圖檔並產生png buffer
-                aSiteChect.setChartData(report.reportData, SiteChect.Type.COMPANY).paint();
+                aSiteChect.setChartData(report.reportData, SiteChect.Type.SITES).paint(['Warning', 'Critical']);
                 const buffer = aSiteChect.getCanvasBuffer();
 
                 // 加入excel workbook
@@ -334,8 +349,8 @@ class ReportExcel {
                 startRow += 2;
 
                 // [服務狀態說明]
-                const SiteSummaryRows = 7;
-                const expressLabel_2 = [`  各站台網路及設備狀況`, `  以是否發生 MXview One Server Alert 之外的 Alert 區分`, `  Critical Site  當月發生過 Critical Event`,
+                const SiteSummaryRows = 6;
+                const expressLabel_2 = [`  以是否發生 MXview One Server Alert 之外的 Alert 區分`, `  Critical Site  當月發生過 Critical Event`,
                     `  Warning Site  當月未發生Critical Event 但有 Warning Event`, `  Health Site  當月未發生 Critical Event 和 Warning Event`,
                 ];
                 for (let i = startRow; i < startRow + SiteSummaryRows; i++) {
@@ -352,7 +367,6 @@ class ReportExcel {
                         case startRow + 2:
                         case startRow + 3:
                         case startRow + 4:
-                        case startRow + 5:
                             outputSheet.mergeCells(`C${i}:G${i}`);
                             let aCell = aRow.getCell(3);
                             aCell.value = expressLabel_2[i - startRow - 1];
@@ -363,7 +377,7 @@ class ReportExcel {
                 startRow += 2;
 
                 // [彙總數字]
-                let title_2 = ['', 'Health Site', 'Warning Site', 'Critical Site', 'Total'];
+                let title_2 = ['', 'Warning Site', 'Critical Site', '', 'Site Status'];
                 for (let i = 0; i < report.reportData2.length; i++) {
                     let aInfo = report.reportData2[i];
                     aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
@@ -373,6 +387,7 @@ class ReportExcel {
 
                 for (let i = startRow; i <= startRow + (report.reportData2.length + 1); i++) {
                     let aRow = outputSheet.getRow(i);
+                    outputSheet.mergeCells(`F${i}:G${i}`);
                     switch (i) {
                         case startRow: {
                             // 表格標題
@@ -392,16 +407,20 @@ class ReportExcel {
                                 aCell.value = aInfo.Month;
                                 aCell = aRow.getCell(4);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Health;
+                                aCell.value = aInfo.Warning;
                                 aCell = aRow.getCell(5);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Warning;
+                                aCell.value = aInfo.Critical;
                                 aCell = aRow.getCell(6);
                                 aCell.style = tableBody_R;
-                                aCell.value = aInfo.Critical;
-                                aCell = aRow.getCell(7);
-                                aCell.style = tableBody_R;
-                                aCell.value = aInfo.Total;
+                                let siteStatus = 'Health Site';                             
+                                if(aInfo.Warning > 0) {
+                                    siteStatus = 'Warning Site'
+                                }
+                                if(aInfo.Critical > 0) {
+                                    siteStatus = 'Critical Site'
+                                }                                   
+                                aCell.value = siteStatus;
                             }
 
                             break;
@@ -410,7 +429,7 @@ class ReportExcel {
 
                 // [繪圖]
                 // 繪製圖檔並產生png buffer
-                aSiteChect.setChartData(report.reportData2, SiteChect.Type.COMPANY).paint();
+                aSiteChect.setChartData(report.reportData2, SiteChect.Type.SITES).paint(['Warning', 'Critical']);
                 const buffer2 = aSiteChect.getCanvasBuffer();
 
                 // 加入excel workbook
@@ -420,113 +439,86 @@ class ReportExcel {
                 });
                 outputSheet.addImage(imageId2, { tl: { col: 7.5, row: imgStartRow }, ext: { width: chartWidth, height: chartHeight } });
                 startRow += report.reportData2.length;
-                startRow += 5;
+                startRow += 6;
             }
 
+            let blockStartRow = startRow;
             // ====================================================================================================
-            // Critical Event 發生次數 Top 10
+            //  異常事件分類次數
             // ====================================================================================================
-            if(CriticalEventBlock) {
-                let rMap = buildRankMap(report.reportData3);
-                aRow = outputSheet.getRow(startRow);
-                outputSheet.mergeCells(`C${startRow}:M${startRow}`);
+            if(EventTypeBlock) {
+                let aRow = outputSheet.getRow(startRow);
+                outputSheet.mergeCells(`C${startRow}:E${startRow}`);
                 aCell = aRow.getCell(3);
-                aCell.value = 'Critical Event 發生次數 Top 10';
+                aCell.value = ' 異常事件分類次數';
                 aCell.style = blockTitle;
                 startRow += 2;
 
-                // [Type 1~3]
+                // [EventType 1~10]
                 for (let i = startRow; i <= startRow + 10; i++) {
                     let aRow = outputSheet.getRow(i);
                     if (i == startRow) {
-                        fillTitleCell(aRow, 3, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 4, 'Total', tableTitle2_R);
-                        fillTitleCell(aRow, 6, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 7, 'Device unreachable', tableTitle2_R);
-
-                        fillTitleCell(aRow, 9, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 10, 'Network alert', tableTitle2_R);
-                        fillTitleCell(aRow, 12, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 13, 'Ethernet port alert', tableTitle2_R);
-
+                        fillTitleCell(aRow, 3, 'EventType', tableTitle2_L);
+                        fillTitleCell(aRow, 4, '', tableTitle2_L);
+                        fillTitleCell(aRow, 5, 'Count', tableTitle2_R);
                     } else {
-                        let rankInfo = getRankValue(rMap, ETYPE_Total, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Device_Unreachable, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Network_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Ethernet_Port_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
+                        let rankInfo = report.reportData3.RankList[i - startRow - 1];
+                        fillCell(aRow, i - startRow, 3, rankInfo.EventName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i - startRow, 4, rankInfo.EventName, tableBody2_R_even, tableBody2_R);
+                        fillCell(aRow, i - startRow, 5, rankInfo.Count, tableBody2_R_even, tableBody2_R);
                     }
+                    outputSheet.mergeCells(`C${i}:D${i}`);
                 }
-                startRow += 13;
-                // [Type 4~7]
-                for (let i = startRow; i <= startRow + 10; i++) {
-                    let aRow = outputSheet.getRow(i);
-                    if (i == startRow) {
-                        fillTitleCell(aRow, 3, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 4, 'Fiber port alert', tableTitle2_R);
-                        fillTitleCell(aRow, 6, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 7, 'Power supply alert', tableTitle2_R);
+                startRow += 11;
+                aRow = outputSheet.getRow(startRow);
+                fillTitleCell(aRow, 3, 'Total', tableFooter2_L);
+                fillTitleCell(aRow, 4, '', tableFooter2_R);
+                fillTitleCell(aRow, 5, report.reportData3.RankTotal, tableFooter2_R);
+                outputSheet.mergeCells(`C${startRow}:D${startRow}`);
+                startRow += 3;
+                startRow = blockStartRow;
 
-                        fillTitleCell(aRow, 9, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 10, 'Network intrusion alert', tableTitle2_R);
-                        fillTitleCell(aRow, 12, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 13, 'Device security alert', tableTitle2_R);
-
-                    } else {
-                        let rankInfo = getRankValue(rMap, ETYPE_Fiber_Port_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Power_Supply_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Network_Intrusion_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_Device_Security_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 12, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 13, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-                    }
-                }
-                startRow += 13;
-                // [Type 8~10]
-                for (let i = startRow; i <= startRow + 10; i++) {
-                    let aRow = outputSheet.getRow(i);
-                    if (i == startRow) {
-                        fillTitleCell(aRow, 3, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 4, 'Device Status Alert', tableTitle2_R);
-                        fillTitleCell(aRow, 6, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 7, 'MXview One Server Alert', tableTitle2_R);
-                        fillTitleCell(aRow, 9, 'Site', tableTitle2_L);
-                        fillTitleCell(aRow, 10, 'GOOSE', tableTitle2_R);
-                    } else {
-                        let rankInfo = getRankValue(rMap, ETYPE_Device_Status_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 3, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 4, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_MXview_One_Server_Alert, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 6, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 7, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-
-                        rankInfo = getRankValue(rMap, ETYPE_GOOSE, i - startRow - 1);
-                        fillCell(aRow, i - startRow, 9, rankInfo.SiteName, tableBody2_L_even, tableBody2_L);
-                        fillCell(aRow, i - startRow, 10, rankInfo.Times, tableBody2_R_even, tableBody2_R);
-                    }
-                }
-                startRow += 13;
             }
+
+            // ====================================================================================================
+            //  異常事件次數 Top 10
+            // ====================================================================================================
+            if(EventRankBlock) {
+                let aRow = outputSheet.getRow(startRow);
+                outputSheet.mergeCells(`G${startRow}:M${startRow}`);
+                aCell = aRow.getCell(7);
+                aCell.value = ' 異常事件次數 Top 10';
+                aCell.style = blockTitle;
+                startRow += 2;
+
+                // [EventType 1~10]
+                for (let i = startRow; i <= startRow + 10; i++) {
+                    let aRow = outputSheet.getRow(i);
+                    if (i == startRow) {
+                        fillTitleCell(aRow, 7, 'Categroy', tableTitle2_L);
+                        fillTitleCell(aRow, 9, 'EventType', tableTitle2_L);
+                        fillTitleCell(aRow, 13, 'Count', tableTitle2_R);
+                    } else {
+                        let rankInfo = report.reportData3.RankList[i - startRow - 1];
+                        fillCell(aRow, i - startRow, 7, rankInfo.EventName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i - startRow, 9, rankInfo.EventName, tableBody2_L_even, tableBody2_L);
+                        fillCell(aRow, i - startRow, 13, rankInfo.Count, tableBody2_R_even, tableBody2_R);
+                    }
+                    outputSheet.mergeCells(`G${i}:H${i}`);
+                    outputSheet.mergeCells(`I${i}:L${i}`);
+                }
+                startRow += 11;
+                aRow = outputSheet.getRow(startRow);
+                fillTitleCell(aRow, 7, 'Total', tableFooter2_L);
+                fillTitleCell(aRow, 9, '', tableFooter2_R);
+                fillTitleCell(aRow, 13, report.reportData3.RankTotal, tableFooter2_R);
+                outputSheet.mergeCells(`G${startRow}:H${startRow}`);
+                outputSheet.mergeCells(`I${startRow}:L${startRow}`);
+                startRow += 3;
+                // startRow = blockStartRow;
+
+            }
+
 
             // ====================================================================================================
             // Warning Event 發生次數 Top 10
@@ -657,4 +649,4 @@ class ReportExcel {
 
 }
 
-module.exports = ReportExcel;
+module.exports = ReportExcelSite;

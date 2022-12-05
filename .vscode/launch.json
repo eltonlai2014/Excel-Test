@@ -7,12 +7,21 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Report_Excel",
+      "name": "ReportOrg",
       "skipFiles": [
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}\\Report_Excel_Index.js"
-    },    
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "ReportSite",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\Report_Excel_Index2.js"
+    },      
     {
       "type": "node",
       "request": "launch",

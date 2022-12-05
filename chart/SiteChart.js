@@ -5,6 +5,7 @@ const _ = require('lodash');
 // require('canvas-5-polyfill');
 class SiteChart extends CommonChart {
 
+
     constructor(cWidth, cHeight, options) {
         super(cWidth, cHeight, options);
         this.myInit(options);
@@ -16,7 +17,9 @@ class SiteChart extends CommonChart {
         this.chartColor = options.chartColor || ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED'];
     }
 
-    setChartData(data) {
+    setChartData(data, type) {
+        // company data & site data
+        type = type || SiteChart.Type.COMPANY;
         logger.info('SiteChart setChartData ...');
         super.setChartData(data);
         this.chartData = data;
@@ -29,8 +32,14 @@ class SiteChart extends CommonChart {
         this.maxValue = 0;
         for (let i = 0; i < data.length; i++) {
             let aInfo = data[i];
-            aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
-            this.maxValue = Math.max(this.maxValue, aInfo.Total);
+            if(type == SiteChart.Type.COMPANY) {
+                aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
+                this.maxValue = Math.max(this.maxValue, aInfo.Total);
+            }            
+            else if(type == SiteChart.Type.SITES) {
+                this.maxValue = Math.max(this.maxValue, aInfo.Warning);
+                this.maxValue = Math.max(this.maxValue, aInfo.Critical);
+            }    
         }
         // 將資料依照日期排序
         data = _.sortBy(data, ['Month']);
@@ -44,8 +53,9 @@ class SiteChart extends CommonChart {
         console.log(this.leftWidth, this.chartWidth, this.rightWidth);
         console.log(this.topHeight, this.chartHeight, this.bottomHeight);
     }
-    paint() {
+    paint(key) {
         logger.info('SiteChart paint ...');
+        key = key || ['Health', 'Warning', 'Critical', 'Total'];
         this.getChartInfo();
         const fontStyle_Normal = '';
         const fontStyle_Bold = 'bold';
@@ -97,7 +107,7 @@ class SiteChart extends CommonChart {
         // 畫圖
         aContext.save();
         const unitWidth = this.chartWidth / this.chartData.length;
-        let key = ['Health', 'Warning', 'Critical', 'Total'];
+        // let key = ['Health', 'Warning', 'Critical', 'Total'];
         let chartWidth = 4;
         for (let j = 0; j < key.length; j++) {
             let aKey = key[j];
@@ -179,4 +189,8 @@ class SiteChart extends CommonChart {
     }
 
 }
+// 常數定義
+SiteChart.Type = {};
+SiteChart.Type.COMPANY = 0;
+SiteChart.Type.SITES = 1;
 module.exports = SiteChart;
