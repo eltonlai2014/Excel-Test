@@ -73,11 +73,11 @@ class ReportExcel {
             let WarningEventBlock = this.getParamValue('WarningEventBlock', true);      // 41
             if(OperationBlock) {
                 // 這裡需要看有幾個月的資料
-                totalRows+= (16 + report.reportData.length);
+                totalRows+= (16 + report.reportData.data.length);
             }
             if(NetworkDeviceBlock) {
                 // 這裡需要看有幾個月的資料
-                totalRows+= (16 + report.reportData2.length);
+                totalRows+= (16 + report.reportData2.data.length);
             }
             if(CriticalEventBlock) {
                 totalRows+= 41;
@@ -104,13 +104,7 @@ class ReportExcel {
             const ETYPE_MXview_One_Server_Alert = 9 ;
             const ETYPE_GOOSE = 10 ;
             // [繪圖物件準備]
-            const chartWidth = 540;
-            const chartHeight = 300;
-            const options2 = {
-                leftWidth: 50, rightWidth: 20, topHeight: 20, bottomHeight: 70,
-                chartColor: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED']
-            };
-            const aSiteChect = new SiteChect(chartWidth, chartHeight, options2);
+            const aSiteChect = new SiteChect(this.options.chartOptions.chartWidth || 540, this.options.chartOptions.chartHeight || 300, this.options.chartOptions);
 
             // 取得欄位寬度
             let colWidth = [];
@@ -261,14 +255,14 @@ class ReportExcel {
 
                 // [彙總數字]
                 let title = ['', 'Health Site', 'Warning Site', 'Critical Site', 'Total'];
-                for (let i = 0; i < report.reportData.length; i++) {
-                    let aInfo = report.reportData[i];
+                for (let i = 0; i < report.reportData.data.length; i++) {
+                    let aInfo = report.reportData.data[i];
                     aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
                 }
                 // 將資料依照日期排序
-                report.reportData = _.sortBy(report.reportData, ['Month']);
+                report.reportData.data = _.sortBy(report.reportData.data, ['Month']);
 
-                for (let i = startRow; i <= startRow + (report.reportData.length + 1); i++) {
+                for (let i = startRow; i <= startRow + (report.reportData.data.length + 1); i++) {
                     let aRow = outputSheet.getRow(i);
                     switch (i) {
                         case startRow: {
@@ -282,7 +276,7 @@ class ReportExcel {
                         }
                         default:
                             // 數值
-                            let aInfo = report.reportData[i - startRow - 1];
+                            let aInfo = report.reportData.data[i - startRow - 1];
                             if (aInfo) {
                                 let aCell = aRow.getCell(3);
                                 aCell.style = tableBody_L;
@@ -315,9 +309,9 @@ class ReportExcel {
                     buffer: buffer,
                     extension: 'png',
                 });
-                outputSheet.addImage(imageId1, { tl: { col: 7.5, row: imgStartRow }, ext: { width: chartWidth, height: chartHeight } });
+                outputSheet.addImage(imageId1, { tl: { col: 7.5, row: imgStartRow }, ext: { width: this.options.chartOptions.chartWidth, height: this.options.chartOptions.chartHeight } });
 
-                startRow += report.reportData.length;
+                startRow += report.reportData.data.length;
                 startRow += 5;
             }
 
@@ -364,14 +358,14 @@ class ReportExcel {
 
                 // [彙總數字]
                 let title_2 = ['', 'Health Site', 'Warning Site', 'Critical Site', 'Total'];
-                for (let i = 0; i < report.reportData2.length; i++) {
-                    let aInfo = report.reportData2[i];
+                for (let i = 0; i < report.reportData2.data.length; i++) {
+                    let aInfo = report.reportData2.data[i];
                     aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
                 }
                 // 將資料依照日期排序
-                report.reportData2 = _.sortBy(report.reportData2, ['Month']);
+                report.reportData2.data = _.sortBy(report.reportData2.data, ['Month']);
 
-                for (let i = startRow; i <= startRow + (report.reportData2.length + 1); i++) {
+                for (let i = startRow; i <= startRow + (report.reportData2.data.length + 1); i++) {
                     let aRow = outputSheet.getRow(i);
                     switch (i) {
                         case startRow: {
@@ -385,7 +379,7 @@ class ReportExcel {
                         }
                         default:
                             // 數值
-                            let aInfo = report.reportData2[i - startRow - 1];
+                            let aInfo = report.reportData2.data[i - startRow - 1];
                             if (aInfo) {
                                 let aCell = aRow.getCell(3);
                                 aCell.style = tableBody_L;
@@ -418,8 +412,8 @@ class ReportExcel {
                     buffer: buffer2,
                     extension: 'png',
                 });
-                outputSheet.addImage(imageId2, { tl: { col: 7.5, row: imgStartRow }, ext: { width: chartWidth, height: chartHeight } });
-                startRow += report.reportData2.length;
+                outputSheet.addImage(imageId2, { tl: { col: 7.5, row: imgStartRow }, ext: { width: this.options.chartOptions.chartWidth, height: this.options.chartOptions.chartHeight } });
+                startRow += report.reportData2.data.length;
                 startRow += 5;
             }
 
@@ -640,7 +634,9 @@ class ReportExcel {
 
             // 刪除style頁面
             this.workbook.removeWorksheet(worksheet.id);
-            resolve(true);
+            // 產生Excel檔案Buffer
+            const buffer = await this.workbook.xlsx.writeBuffer();
+            resolve(buffer);
         });
     }
 

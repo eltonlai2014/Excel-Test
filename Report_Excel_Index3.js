@@ -35,7 +35,7 @@ log4js.configure({
     },
 });
 
-const ReportExcel = require('./ReportExcel');
+const ReportExcel = require('./bundle');
 const start = async () => {
      // 準備報表資料
     const report = {};
@@ -122,7 +122,7 @@ const start = async () => {
         }        
     }
     const aExcel = new ReportExcel(options);
-    // 設定資料與產生報表，並取的buffer
+    // 設定資料與產生報表，並取得buffer
     const buffer = await aExcel.genReport(report);
 
     // 存檔

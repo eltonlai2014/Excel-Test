@@ -15,6 +15,7 @@ class SiteChart extends CommonChart {
         logger.info('SiteChart init');
         // 方塊顏色
         this.chartColor = options.chartColor || ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED'];
+        this.chartLineWidth = options.chartLineWidth || 4;
     }
 
     setChartData(data, type) {
@@ -22,7 +23,8 @@ class SiteChart extends CommonChart {
         type = type || SiteChart.Type.COMPANY;
         logger.info('SiteChart setChartData ...');
         super.setChartData(data);
-        this.chartData = data;
+        this.chartData = data.data;
+        this.chartTitle = data.title;
         // let data = [
         //     {Month: '六月', Health: 97, Warning: 2, Critical: 1},
         //     {Month: '七月', Health: 97, Warning: 2, Critical: 1},
@@ -30,8 +32,8 @@ class SiteChart extends CommonChart {
         // ]
         // 遍歷歷史資料計算最大值最小值
         this.maxValue = 0;
-        for (let i = 0; i < data.length; i++) {
-            let aInfo = data[i];
+        for (let i = 0; i < this.chartData.length; i++) {
+            let aInfo = this.chartData[i];
             if(type == SiteChart.Type.COMPANY) {
                 aInfo.Total = aInfo.Health + aInfo.Warning + aInfo.Critical;
                 this.maxValue = Math.max(this.maxValue, aInfo.Total);
@@ -42,8 +44,8 @@ class SiteChart extends CommonChart {
             }    
         }
         // 將資料依照日期排序
-        data = _.sortBy(data, ['Month']);
-        console.log('data', data, this.maxValue);
+        this.chartData = _.sortBy(this.chartData, ['Month']);
+        console.log('data', this.chartData, this.maxValue);
         // 取坐標軸最大值
         this.axisY_Max = this.getPrettyUnit(this.maxValue);
         return this;
@@ -74,10 +76,12 @@ class SiteChart extends CommonChart {
         this.clearLineTo(aContext, this.cWidth - 1, 0, this.cWidth - 1, this.cHeight - 1, bolderColor, borderWidth);
 
         // 圖標題
-        // const title_FontSize = 16 ;
-        // const title_Font = 'Arial' ;
-        // const title_Color = '#000000';
-        // this.drawString(aContext, this.site_id, this.leftWidth, this.topHeight / 2, title_FontSize, title_Font, fontStyle_Normal, title_Color, 'left', 'middle');
+        if(this.chartTitle){
+            const title_FontSize = 16 ;
+            const title_Font = 'Arial' ;
+            const title_Color = '#333333';
+            this.drawString(aContext, this.chartTitle, this.cWidth / 2, this.topHeight / 2 + 4, title_FontSize, title_Font, fontStyle_Normal, title_Color, 'center', 'middle');    
+        }
 
         // X Y軸線
         const axisColor = '#CCCCCC';
@@ -108,7 +112,6 @@ class SiteChart extends CommonChart {
         aContext.save();
         const unitWidth = this.chartWidth / this.chartData.length;
         // let key = ['Health', 'Warning', 'Critical', 'Total'];
-        let chartWidth = 4;
         for (let j = 0; j < key.length; j++) {
             let aKey = key[j];
             if (this.chartData.length == 1) {
@@ -138,7 +141,7 @@ class SiteChart extends CommonChart {
                     let yPos = this.topHeight + ((this.axisY_Max - aInfo[aKey]) / this.axisY_Max) * this.chartHeight;
                     // console.log(xPos, yPos, aInfo.time);
                     if (fromX != null && fromY != null) {
-                        this.clearLineTo(aContext, fromX, fromY, xPos, yPos, this.chartColor[(j % this.chartColor.length)], chartWidth);
+                        this.clearLineTo(aContext, fromX, fromY, xPos, yPos, this.chartColor[(j % this.chartColor.length)], this.chartLineWidth);
                     }
                     fromX = xPos;
                     fromY = yPos;
@@ -177,6 +180,7 @@ class SiteChart extends CommonChart {
         let hintWidth = 30;
         let hintHeight = 6;
 
+        // 用圖例數量決定位置
         let yPos = this.cHeight - 16;
         for (let i = 0; i < key.length; i++) {
             let xPos = this.leftWidth + (this.chartWidth / key.length) * i;

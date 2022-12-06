@@ -204,18 +204,23 @@ class DrawLib {
 
     // 座標取整數級距
     getPrettyUnit(value, aRatio) {
-        if (value < 1) {
-            return 0.1;
-        }      
         // 最大值 放大比率
         let factor = 1.1;
         let unit = Math.pow(10, Math.floor(Math.log10(value)));
         let nextUnit = Math.pow(10, Math.ceil(Math.log10(value)));
         let ratio = value * factor / unit;
+        // 小數字的處理
+        if (nextUnit <= 10) {
+            if (value < 4.5 * unit) {
+                return nextUnit/2;
+            }
+            return nextUnit;
+        }
         // 決定是否要換 下一個級距
         aRatio = aRatio || 7.5;
         if (ratio <= aRatio) {
-            return Math.ceil(value * factor / unit) * unit;
+            let ret = Math.ceil(value * factor / unit) * unit - unit / 2;
+            return ret;
         }
         return nextUnit;
     }

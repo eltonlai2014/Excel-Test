@@ -46,29 +46,35 @@ const start = async () => {
     report.reportSDate = '2022/06/01';
     report.reportEate = '2022/08/31';
 
-    report.reportData = [
-        { Month: 202201, Warning: 2, Critical: 2 },
-        { Month: 202202, Warning: 2, Critical: 0 },
-        { Month: 202203, Warning: 2, Critical: 3 },
-        { Month: 202204, Warning: 2, Critical: 0 },
-        { Month: 202205, Warning: 2, Critical: 1 },
-        { Month: 202206, Warning: 2, Critical: 3 },
-        // { Month: 202207, Health: 97, Warning: 2, Critical: 2 },
-        // { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
-        // { Month: 202208, Health: 98, Warning: 2, Critical: 3 },
-        // { Month: 202204, Health: 97, Warning: 2, Critical: 2 },
-        // { Month: 202205, Health: 96, Warning: 2, Critical: 1 },
-        // { Month: 202206, Health: 98, Warning: 2, Critical: 3 },
-        // { Month: 202207, Health: 97, Warning: 2, Critical: 2 },
-        // { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
-        // { Month: 202208, Health: 98, Warning: 2, Critical: 3 },
-    ]
+    report.reportData = {
+        // title: '111',
+        data: [
+            { Month: 202201, Warning: 2, Critical: 2 },
+            { Month: 202202, Warning: 2, Critical: 0 },
+            { Month: 202203, Warning: 2, Critical: 3 },
+            { Month: 202204, Warning: 2, Critical: 0 },
+            { Month: 202205, Warning: 2, Critical: 1 },
+            { Month: 202206, Warning: 2, Critical: 3 },
+            // { Month: 202207, Health: 97, Warning: 2, Critical: 2 },
+            // { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
+            // { Month: 202208, Health: 98, Warning: 2, Critical: 3 },
+            // { Month: 202204, Health: 97, Warning: 2, Critical: 2 },
+            // { Month: 202205, Health: 96, Warning: 2, Critical: 1 },
+            // { Month: 202206, Health: 98, Warning: 2, Critical: 3 },
+            // { Month: 202207, Health: 97, Warning: 2, Critical: 2 },
+            // { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
+            // { Month: 202208, Health: 98, Warning: 2, Critical: 3 },
+        ]
+    }
 
-    report.reportData2 = [
-        { Month: 202207, Health: 94, Warning: 0, Critical: 12 },
-        { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
-        { Month: 202208, Health: 98, Warning: 2, Critical: 3 },        
-    ]
+    report.reportData2 = {
+        // title: '111',        
+        data: [
+            { Month: 202207, Health: 94, Warning: 0, Critical: 12 },
+            { Month: 202209, Health: 96, Warning: 2, Critical: 1 },
+            { Month: 202208, Health: 98, Warning: 2, Critical: 3 },
+        ]
+    }
 
     report.reportData3 = {
         RankTotal:52, 
@@ -87,19 +93,18 @@ const start = async () => {
     }
 
     report.reportData4 = {
-        RankType: 'Warning',
+        RankTotal:52, 
         RankList: [
-            { EventType: 99, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 300}, { SiteId: '123', SiteName: 'bbb', Times: 200 }, { SiteId: '123', SiteName: 'ccc', Times: 100 }] },
-            { EventType: 1, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 10}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 2, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 9}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 3, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 9}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 4, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 8}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 5, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 7}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 6, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 7}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 7, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 7}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 8, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 6}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 9, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 5}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
-            { EventType: 10, Rank: [{ SiteId: '123', SiteName: 'bbb', Times: 5}, { SiteId: '123', SiteName: 'aaa', Times: 10 }, { SiteId: '123', SiteName: 'aaa', Times: 10 }] },
+            { EventType: 4, Categroy: 'Fiber port alert', EventName: 'SFP voltage below threshold', Count: 3},
+            { EventType: 5, Categroy: 'Power supply alert', EventName: 'PWR 1 Off->On', Count: 10},
+            { EventType: 6, Categroy: 'Network intrusion alert', EventName: 'Too many login failures, web access temporarily blocked', Count: 2},
+            { EventType: 7, Categroy: 'Device security alert', EventName: 'Login Fail', Count: 2},
+            { EventType: 8, Categroy: 'Device Status Alert', EventName: 'Config. Changed', Count: 1},
+            { EventType: 1, Categroy: 'Device unreachable', EventName: 'Device SNMP unreachable', Count: 10},
+            { EventType: 2, Categroy: 'Network alert', EventName: 'Topology Changed', Count: 8},
+            { EventType: 3, Categroy: 'Ethernet port alert', EventName: 'Input bandwidth utilization is over the threshold.', Count: 1},            
+            { EventType: 9, Categroy: 'MXview One Server Alert', EventName: 'Free memory < 20%', Count: 5},
+            { EventType: 10, Categroy: 'GOOSE', EventName: 'GOOSE timeout', Count: 10},
         ],
     }
 
@@ -112,12 +117,16 @@ const start = async () => {
         EventTypeBlock: true,
         EventRankBlock: true,
         WarningEventBlock: false,
+        chartOptions : {
+            chartWidth: 540, chartHeight: 300,
+            leftWidth: 50, rightWidth: 20, topHeight: 20, bottomHeight: 70,
+            chartLineWidth: 2,
+            chartColor: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#FFC000', '#229B2F', '#6495ED']
+        }
     }
     const aExcel = new ReportExcelSite(options);
-    // 設定資料與產生報表
-    await aExcel.genReport(report);
-    // 取得buffer
-    const buffer = await aExcel.getReportBuffer();
+    // 設定資料與產生報表，並取得buffer
+    const buffer = await aExcel.genReport(report);
 
     // 存檔
     try {
