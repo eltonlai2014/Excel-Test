@@ -30,7 +30,16 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}\\Report_Excel_Index3.js"
-    },  
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Use Bundle2",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\Report_Excel_Index4.js"
+    },      
     {
       "type": "node",
       "request": "launch",

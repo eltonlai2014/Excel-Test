@@ -35,7 +35,7 @@ log4js.configure({
     },
 });
 
-const ReportExcel = require('./bundle');
+const { ReportExcel } = require('./bundle');
 const start = async () => {
      // 準備報表資料
     const report = {};
